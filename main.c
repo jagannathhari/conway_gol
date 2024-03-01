@@ -10,8 +10,7 @@
 
 #define TITLE "Conway Game Of Life"
 
-#define SIZE 30
-#define GRID_EXT (GRID + 2)
+#define SIZE 20
 #define FPS 10
 
 int get_total_neighour(char **grid, int i, int j) {
