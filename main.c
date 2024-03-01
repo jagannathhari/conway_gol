@@ -51,6 +51,13 @@ char **allocate_grid(int rows, int cols, int fill) {
     return grid;
 }
 
+void clear_grid(char **grid, int rows, int cols, int fill) {
+    if (grid == NULL)
+        return;
+    for (int i = 0; i < rows; i++) {
+        memset(grid[i], fill, cols);
+    }
+}
 void update_state(char **state, char cell_val, int row, int col,
                   int total_neighbour) {
     if (cell_val == '1') {
@@ -82,13 +89,21 @@ void update_grid(char **grid, char **state, int rows, int cols) {
 }
 
 void fill_cell_on_click(char **grid) {
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         Vector2 pos = GetMousePosition();
         int x = pos.x / SIZE + 1;
         int y = pos.y / SIZE + 1;
-        grid[y][x] = (grid[y][x] == '1') ? '0' : '1';
+        grid[y][x] = '1';
+    }
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+        Vector2 pos = GetMousePosition();
+        int x = pos.x / SIZE + 1;
+        int y = pos.y / SIZE + 1;
+        grid[y][x] = '0';
     }
 }
+
 int main() {
     int rows = H / SIZE;
     int cols = W / SIZE;
@@ -107,7 +122,6 @@ int main() {
         fill_cell_on_click(grid);
         if (IsKeyReleased(KEY_SPACE))
             start = !start;
-
         ClearBackground(WHITE);
 
         BeginDrawing();
@@ -123,6 +137,11 @@ int main() {
         EndDrawing();
         if (start)
             update_grid(grid, state, rows, cols);
+
+        if (IsKeyReleased(KEY_C)) {
+            clear_grid(grid, rows, cols, '0');
+            clear_grid(state, rows, cols, '0');
+        }
     }
     CloseWindow();
     return 0;
