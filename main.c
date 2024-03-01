@@ -88,19 +88,12 @@ void update_grid(char **grid, char **state, int rows, int cols) {
     }
 }
 
-void fill_cell_on_click(char **grid) {
-
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+void fill_cell_on_click(char **grid, int button) {
+    if (IsMouseButtonDown(button)) {
         Vector2 pos = GetMousePosition();
         int x = pos.x / SIZE + 1;
         int y = pos.y / SIZE + 1;
-        grid[y][x] = '1';
-    }
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-        Vector2 pos = GetMousePosition();
-        int x = pos.x / SIZE + 1;
-        int y = pos.y / SIZE + 1;
-        grid[y][x] = '0';
+        grid[y][x] = (button == MOUSE_BUTTON_LEFT) ? '1' : '0';
     }
 }
 
@@ -119,7 +112,9 @@ int main() {
 
     while (!WindowShouldClose()) {
 
-        fill_cell_on_click(grid);
+        fill_cell_on_click(grid, MOUSE_BUTTON_LEFT);
+        fill_cell_on_click(grid, MOUSE_BUTTON_RIGHT);
+
         if (IsKeyReleased(KEY_SPACE))
             start = !start;
         ClearBackground(WHITE);
