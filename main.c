@@ -57,6 +57,15 @@ void clear_grid(char **grid, int rows, int cols, int fill) {
         memset(grid[i], fill, cols);
     }
 }
+
+void fill_random(char **grid , int rows , int cols){
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            grid[i][j] = GetRandomValue('0','1');
+        }
+    }
+}
+
 void update_state(char **state, char cell_val, int row, int col,
                   int total_neighbour) {
     if (cell_val == '1') {
@@ -135,6 +144,8 @@ int main() {
         if (IsKeyReleased(KEY_C)) {
             clear_grid(grid, rows, cols, '0');
             clear_grid(state, rows, cols, '0');
+        }else if(IsKeyDown(KEY_R)){
+            fill_random(grid,rows,cols);
         }
     }
     CloseWindow();
