@@ -2,7 +2,7 @@
 set -xe
 
 PROJECT_DIR=`pwd`
-SOURCE_FILE="main.c"
+SOURCE_FILE="main.c utils.c parser.c"
 
 EXECUTABLE="Conwey_Gol"
 
