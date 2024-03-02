@@ -96,7 +96,7 @@ int main(int argc , char **argv) {
         create_world(argv[1],&world);
         rows = world.height;
         cols = world.width;
-        size = H/rows;
+        size = min(H/rows,W/cols);
     }else{
         world.height = rows;
         world.width = cols;
