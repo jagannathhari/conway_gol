@@ -33,7 +33,7 @@ To build Conway's Game of Life, follow these steps:
     ./build.sh
     ```
 
-3. Run the executablel
+3. Run the executable 
     ```
-    ./Conwey_Gol
+    ./Conwey_Gol [rle file path]
     ```
