@@ -30,10 +30,10 @@ To build Conway's Game of Life, follow these steps:
 4. Run the build script:
 
     ```
-    ./build.sh
+    cd src && ./build.sh
     ```
 
 3. Run the executable 
     ```
-    ./Conwey_Gol [rle file path]
+    ./build/Conwey_Gol [rle file path]
     ```
