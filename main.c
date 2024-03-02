@@ -1,17 +1,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <raylib.h>
-
+#include "./parser.h"
+#include "./utils.h"
 #define W 1000
 #define H 1000
 
 #define TITLE "Conway Game Of Life"
 
 #define SIZE 20
-#define FPS 10
+#define FPS  10
+
+#define MAX_FILEPATH_SIZE 2048
 
 int get_total_neighour(char **grid, int i, int j) {
     int sum = 0;
@@ -37,26 +39,6 @@ bool should_die(int total_neougher) {
 
 bool can_become_alive(int total_neougher) { return total_neougher == 3; }
 
-char **allocate_grid(int rows, int cols, int fill) {
-    char **grid = malloc(sizeof(char *) * rows);
-    if (grid == NULL)
-        return NULL;
-    for (int i = 0; i < rows; ++i) {
-        grid[i] = malloc(sizeof(char) * cols);
-        if (grid[i] == NULL)
-            return NULL;
-        memset(grid[i], fill, cols);
-    }
-    return grid;
-}
-
-void clear_grid(char **grid, int rows, int cols, int fill) {
-    if (grid == NULL)
-        return;
-    for (int i = 0; i < rows; i++) {
-        memset(grid[i], fill, cols);
-    }
-}
 
 void fill_random(char **grid , int rows , int cols){
     for(int i=0;i<rows;i++){
@@ -81,12 +63,12 @@ void update_state(char **state, char cell_val, int row, int col,
     }
 }
 
-void draw_cell(char cell_val, int x, int y) {
+void draw_cell(char cell_val, int x, int y,int size) {
 
     if (cell_val == '1') {
-        DrawRectangle((x - 1) * SIZE, (y - 1) * SIZE, SIZE, SIZE, RED);
+        DrawRectangle((x - 1) * size, (y - 1) * size, size, size, RED);
     } else {
-        DrawRectangleLines((x - 1) * SIZE, (y - 1) * SIZE, SIZE, SIZE, BLACK);
+        DrawRectangleLines((x - 1) * size, (y - 1) * size, size, size, BLACK);
     }
 }
 
@@ -96,22 +78,35 @@ void update_grid(char **grid, char **state, int rows, int cols) {
     }
 }
 
-void fill_cell_on_click(char **grid, int button) {
+void fill_cell_on_click(char **grid, int button,int size) {
     if (IsMouseButtonDown(button)) {
         Vector2 pos = GetMousePosition();
-        int x = pos.x / SIZE + 1;
-        int y = pos.y / SIZE + 1;
+        int x = pos.x / size + 1;
+        int y = pos.y / size + 1;
         grid[y][x] = (button == MOUSE_BUTTON_LEFT) ? '1' : '0';
     }
 }
 
-int main() {
+int main(int argc , char **argv) {
+    World world; 
     int rows = H / SIZE;
     int cols = W / SIZE;
+    int size = SIZE;
+    if(argc==2){
+        create_world(argv[1],&world);
+        rows = world.height;
+        cols = world.width;
+        size = H/rows;
+    }else{
+        world.height = rows;
+        world.width = cols;
+        world.grid = allocate_grid(rows + 2, cols + 2, '0');
+    }
+
+    
 
     bool start = false;
 
-    char **grid = allocate_grid(rows + 2, cols + 2, '0');
     char **state = allocate_grid(rows + 2, cols + 2, '0');
 
     InitWindow(W, H, TITLE);
@@ -120,8 +115,8 @@ int main() {
 
     while (!WindowShouldClose()) {
 
-        fill_cell_on_click(grid, MOUSE_BUTTON_LEFT);
-        fill_cell_on_click(grid, MOUSE_BUTTON_RIGHT);
+        fill_cell_on_click(world.grid, MOUSE_BUTTON_LEFT,size);
+        fill_cell_on_click(world.grid, MOUSE_BUTTON_RIGHT,size);
 
         if (IsKeyReleased(KEY_SPACE))
             start = !start;
@@ -131,21 +126,21 @@ int main() {
         for (int i = 1; i <= rows; i++) {
             for (int j = 1; j <= cols; j++) {
                 if (start) {
-                    int total_neh = get_total_neighour(grid, i, j);
-                    update_state(state, grid[i][j], i, j, total_neh);
+                    int total_neh = get_total_neighour(world.grid, i, j);
+                    update_state(state, world.grid[i][j], i, j, total_neh);
                 }
-                draw_cell(grid[i][j], j, i);
+                draw_cell(world.grid[i][j], j, i,size);
             }
         }
         EndDrawing();
         if (start)
-            update_grid(grid, state, rows, cols);
+            update_grid(world.grid, state, rows, cols);
 
         if (IsKeyReleased(KEY_C)) {
-            clear_grid(grid, rows, cols, '0');
+            clear_grid(world.grid, rows, cols, '0');
             clear_grid(state, rows, cols, '0');
         }else if(IsKeyDown(KEY_R)){
-            fill_random(grid,rows,cols);
+            fill_random(world.grid,rows,cols);
         }
     }
     CloseWindow();

@@ -1,4 +1,6 @@
 #include "./parser.h"
+#include "./utils.h"
+
 void handle_error(int error_code) {
     switch (error_code) {
         case FILE_OPEN_ERROR:
@@ -55,8 +57,10 @@ static void eat_similar_char(Source *src, unsigned char c) {
 
 static int get_number(Source *src) {
     int num = 0;
-    while (src->pos < src->size && isdigit(src->buffer[src->pos])) {
-        num = num * 10 + (src->buffer[src->pos++] - '0');
+    char c;
+    while ((c = src->buffer[src->pos]) != '\0' && isdigit(c)) {
+        num = num * 10 + (c - '0');
+        src->pos++;
     }
     return num;
 }
@@ -72,38 +76,44 @@ static int parse_number_assignment(Source *src) {
     return x;
 }
 
-static void get_live_cells(Source *src,DynamicArray *array,int width){
+static void get_live_cells(Source *src, char **grid, int width) {
     int x = 0;
     int y = 0;
-    int temp;
-    while (src->pos < src->size && src->buffer[src->pos]!='!') {
+    int temp=0;
+    while (src->pos < src->size && src->buffer[src->pos] != '!') {
         char c = src->buffer[src->pos];
+        if(c=='\n' || c =='\r'){
+            src->pos++;
+            continue;
+        } 
         if (isdigit(c)) {
-            int temp = get_number(src);
-            char c = src->buffer[src->pos];
+            temp = get_number(src);
+            c = src->buffer[src->pos];
             if (c == '$') {
                 y += temp;
+                x = 0;
             } else {
                 if (c == 'o' || c == 'O') {
-                    while(temp--){
-                        int pos = width*y+x;
-                        push_array(array,pos);
+                    while (temp--) {
+                        grid[y+1][x+1] = '1';
                         x++;
                     }
-                }else{
-                    x+=temp;
+                } else {
+                    x += temp;
                 }
             }
-        }else if(c=='$'){
-                y++;
-                x=0;
-        }else{
+        } else if (c == '$') {
+            y++;
+            x = 0;
+        } else {
+            if (c == 'o' || c == 'O') {
+                grid[y+1][x+1] = '1';
+            }
             x++;
         }
         src->pos++;
     }
 }
-
 static void parse_world_info(Source *src,World *world) {
     int width = parse_number_assignment(src);
     
@@ -112,12 +122,12 @@ static void parse_world_info(Source *src,World *world) {
 
     int height = parse_number_assignment(src);
     world->width = width;
-    world->height= width;
-    init_array(&world->live_cells);
+    world->height= height;
+    world->grid= allocate_grid(world->height+2,world->width+2,'0');
     // TODO parse survival rule
 
     eat_line(src);
-    get_live_cells(src,&world->live_cells,width);
+    get_live_cells(src,world->grid,width);
 }
 
 void create_world(const char *c,World *world){
